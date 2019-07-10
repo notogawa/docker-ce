@@ -6,7 +6,7 @@ GITCOMMIT?=$(shell cd $(ENGINE_DIR) && git rev-parse --short HEAD)
 VERSION?=0.0.0-dev
 GO_VERSION:=1.10.3
 DEB_VERSION=$(shell ./gen-deb-ver $(ENGINE_DIR) "$(VERSION)")
-CHOWN:=docker run --rm -v $(CURDIR):/v -w /v alpine chown
+CHOWN:=docker run --rm -v $(CURDIR):/v -w /v arm32v6/alpine chown
 EPOCH?=
 
 BUILD=docker build --build-arg GO_VERSION=$(GO_VERSION) -t debbuild-$@/$(ARCH) -f $(CURDIR)/$@/Dockerfile.$(ARCH) .
@@ -40,7 +40,7 @@ ubuntu: ubuntu-bionic ubuntu-artful ubuntu-xenial ubuntu-trusty ## build all ubu
 debian: debian-stretch debian-jessie ## build all debian deb packages
 
 .PHONY: raspbian
-raspbian: raspbian-stretch debian-jessie ## build all raspbian deb packages
+raspbian: raspbian-buster raspbian-stretch raspbian-jessie ## build all raspbian deb packages
 
 .PHONY: ubuntu-xenial
 ubuntu-xenial: ## build ubuntu xenial deb packages
@@ -92,6 +92,12 @@ raspbian-jessie: ## build raspbian jessie deb packages
 
 .PHONY: raspbian-stretch
 raspbian-stretch: ## build raspbian stretch deb packages
+	$(BUILD)
+	$(RUN)
+	$(CHOWN) -R $(shell id -u):$(shell id -g) debbuild/$@
+
+.PHONY: raspbian-buster
+raspbian-buster: ## build raspbian buster deb packages
 	$(BUILD)
 	$(RUN)
 	$(CHOWN) -R $(shell id -u):$(shell id -g) debbuild/$@
